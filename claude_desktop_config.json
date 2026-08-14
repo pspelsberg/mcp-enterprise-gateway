@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "enterprise-gateway": {
+      "command": "/home/peppi/coding/mcp-enterprise-gateway/.venv/bin/python",
+      "args": ["-m", "src.server", "--stdio"]
+    }
+  }
+}
