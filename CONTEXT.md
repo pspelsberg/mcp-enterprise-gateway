@@ -59,3 +59,27 @@ _Avoid_: technische Schicht, globales Utility-Modul
 **Gateway Core**:
 Gemeinsam genutzte Verträge und Konfiguration, die keine fachliche Slice-Logik besitzen.
 _Avoid_: Ablage für beliebige Cross-Slice-Logik
+
+## Erweiterte Suche und Audit
+
+**Hybrid Search**:
+Eine Suche, die semantische Vektorsuche mit indexierter Volltextsuche für exakte Begriffe kombiniert.
+_Avoid_: stiller Fallback, globale Volltextsuche
+
+**Audit Studio**:
+Optionale lokale Darstellung ausschließlich aggregierter, PII-freier Datenschutzmetriken.
+_Avoid_: Monitoring für Mehrbenutzerbetrieb, PII-Dashboard
+
+## Maskierungsrichtlinien
+
+**Whitelist**:
+Literal abgeglichene Begriffe, die von der PII-Maskierung ausgenommen sind.
+_Avoid_: reguläre Ausdrücke als Whitelist
+
+**Blacklist**:
+Literal abgeglichene Begriffe, die unabhängig vom Detektor zwingend als Custom-PII maskiert werden.
+_Avoid_: optionale oder strategieabhängige Anwendung
+
+**Maskierungsstrategie**:
+Auswahl zwischen rückführbaren Platzhaltern sowie nicht rückführbaren Redaction- oder Hash-Ausgaben.
+_Avoid_: Deanonymisierung von Redaction/Hash

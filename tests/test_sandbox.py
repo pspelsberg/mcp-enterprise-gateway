@@ -5,7 +5,7 @@ from src.core.models import DockerDaemonUnavailableError
 def test_docker_security_options_are_applied():
     class Container:
         def wait(self, timeout): return {"StatusCode":0}
-        def logs(self, **kwargs): return b"ok"
+        def logs(self, **kwargs): return iter([b"ok"])
         def remove(self, force): pass
     class Containers:
         def run(self, image, command, **kw):
@@ -17,11 +17,11 @@ def test_docker_security_options_are_applied():
     class Client:
         containers=Containers(); images=Images()
         def ping(self): pass
-    assert DockerRunner(Client()).run("print(1)","python",10)["exit_code"]==0
+    assert DockerRunner(Client(), images={"python":"python:3.11-slim", "javascript":"node:20-alpine"}, require_digests=False).run("print(1)","python",10)["exit_code"]==0
 
 def test_daemon_error_without_host_fallback():
     class Client:
         def ping(self): raise RuntimeError("offline")
     # RuntimeError is not a DockerException; real client errors are translated.
     # This fake verifies no subprocess fallback path exists.
-    with pytest.raises(Exception): DockerRunner(Client()).run("print(1)","python",10)
+    with pytest.raises(Exception): DockerRunner(Client(), images={"python":"python:3.11-slim", "javascript":"node:20-alpine"}, require_digests=False).run("print(1)","python",10)

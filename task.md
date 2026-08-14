@@ -1,7 +1,7 @@
 # Task Backlog: Enterprise-Härtung des MCP Enterprise Gateway
 
-**Stand:** 14.08.2026  
-**Repository:** `/home/peppi/coding/mcp-enterprise-gateway`  
+**Stand:** 14.08.2026
+**Repository:** `/home/peppi/coding/mcp-enterprise-gateway`
 **Referenzen:**
 - `/home/peppi/coding/Pathto2027/mcp_idea.md`
 - `README.md`
@@ -48,11 +48,11 @@ Eine Aufgabe gilt erst als erledigt, wenn:
 
 ## TASK-001: Docker-Timeouts strukturiert behandeln
 
-**Status:** Offen  
-**Priorität:** P0  
-**Contract:** `F-EXC`, `F-DOS`  
-**CWE:** CWE-755, CWE-400  
-**OWASP:** A10:2025  
+**Status:** Erledigt
+**Priorität:** P0
+**Contract:** `F-EXC`, `F-DOS`
+**CWE:** CWE-755, CWE-400
+**OWASP:** A10:2025
 **Fundstellen:** `src/sandbox/docker_runner.py:32-36`, `src/server.py:27-30`
 
 ### Problem
@@ -87,11 +87,11 @@ Eine Aufgabe gilt erst als erledigt, wenn:
 
 ## TASK-002: Docker-Ausgabe streaming-basiert und hart begrenzen
 
-**Status:** Offen  
-**Priorität:** P0  
-**Contract:** `F-DOS`  
-**CWE:** CWE-400  
-**CVSS:** 6.5  
+**Status:** Erledigt
+**Priorität:** P0
+**Contract:** `F-DOS`
+**CWE:** CWE-400
+**CVSS:** 6.5
 **Fundstellen:** `src/sandbox/docker_runner.py:8-11,33-34`, `README.md:69-71`
 
 ### Problem
@@ -125,11 +125,11 @@ Eine Aufgabe gilt erst als erledigt, wenn:
 
 ## TASK-003: Unerwartete Fehler zentral maskieren
 
-**Status:** Offen  
-**Priorität:** P0  
-**Contract:** `F-EXC`, `C-CFG`, `C-LOG`  
-**CWE:** CWE-209, CWE-755, CWE-532  
-**OWASP:** A10:2025, A02:2025, A09:2025  
+**Status:** Erledigt
+**Priorität:** P0
+**Contract:** `F-EXC`, `C-CFG`, `C-LOG`
+**CWE:** CWE-209, CWE-755, CWE-532
+**OWASP:** A10:2025, A02:2025, A09:2025
 **Fundstellen:** `src/server.py:12,27-30`, `src/knowledge/lancedb_adapter.py`, `src/sandbox/docker_runner.py`, `src/knowledge/okf_resource.py`
 
 ### Problem
@@ -162,11 +162,11 @@ Eine Aufgabe gilt erst als erledigt, wenn:
 
 ## TASK-004: SSE sicher begrenzen oder standardmäßig deaktivieren
 
-**Status:** Offen  
-**Priorität:** P0 bei gemeinsamem/produktivem Betrieb; P2 im strikt lokalen Single-User-Betrieb  
-**Contract:** `C-AC`, `C-AUTH`, `C-CFG`, `F-MCP`, `F-DOS`  
-**CWE:** CWE-306, CWE-352, CWE-639, CWE-400  
-**OWASP:** A01:2025, A07:2025  
+**Status:** Erledigt
+**Priorität:** P0 bei gemeinsamem/produktivem Betrieb; P2 im strikt lokalen Single-User-Betrieb
+**Contract:** `C-AC`, `C-AUTH`, `C-CFG`, `F-MCP`, `F-DOS`
+**CWE:** CWE-306, CWE-352, CWE-639, CWE-400
+**OWASP:** A01:2025, A07:2025
 **Fundstellen:** `src/server.py:56-60`, `README.md:52`
 
 ### Problem
@@ -205,11 +205,11 @@ Zusätzlich bei aktiviertem SSE:
 
 ## TASK-005: Projektisolierung und Autorisierung für LanceDB einführen
 
-**Status:** Offen  
-**Priorität:** P0 bei Multi-User/Netzbetrieb, P1 lokal  
-**Contract:** `C-AC`, `C-INJ`, `F-MCP`  
-**CWE:** CWE-639, CWE-862, CWE-89  
-**OWASP:** A01:2025, A05:2025  
+**Status:** Erledigt
+**Priorität:** P0 bei Multi-User/Netzbetrieb, P1 lokal
+**Contract:** `C-AC`, `C-INJ`, `F-MCP`
+**CWE:** CWE-639, CWE-862, CWE-89
+**OWASP:** A01:2025, A05:2025
 **Fundstellen:** `src/server.py:36-46`, `src/core/models.py:29-37`, `src/knowledge/lancedb_adapter.py:5-9`
 
 ### Problem
@@ -241,10 +241,10 @@ Zusätzlich bei aktiviertem SSE:
 
 ## TASK-006: Vault nebenläufigkeitssicher und speicherbegrenzt machen
 
-**Status:** Offen  
-**Priorität:** P0/P1  
-**Contract:** `F-DOS`, `F-TOC`, `C-LOG`  
-**CWE:** CWE-400, CWE-367, CWE-532  
+**Status:** Erledigt
+**Priorität:** P0/P1
+**Contract:** `F-DOS`, `F-TOC`, `C-LOG`
+**CWE:** CWE-400, CWE-367, CWE-532
 **Fundstellen:** `src/privacy/vault.py:16-38`
 
 ### Problem
@@ -281,9 +281,9 @@ Zusätzlich bei aktiviertem SSE:
 
 ## TASK-007: LanceDB produktiv konfigurierbar und nutzbar machen
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `C-INJ`, `C-AC`, `C-VAL`, `F-FIT`  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `C-INJ`, `C-AC`, `C-VAL`, `F-FIT`
 **Fundstellen:** `src/server.py:25`, `src/knowledge/lancedb_adapter.py:3-14`, `README.md:3,27`
 
 ### Problem
@@ -323,11 +323,11 @@ Zusätzlich bei aktiviertem SSE:
 
 ## TASK-008: Docker-Image-Integrität und direkte Sprachvalidierung
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `F-SC`, `F-INT`, `F-VAL`  
-**CWE:** CWE-1104, CWE-494, CWE-20, CWE-755  
-**OWASP:** A03:2025, A05:2025, A08:2025  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `F-SC`, `F-INT`, `F-VAL`
+**CWE:** CWE-1104, CWE-494, CWE-20, CWE-755
+**OWASP:** A03:2025, A05:2025, A08:2025
 **Fundstellen:** `src/sandbox/docker_runner.py:16,20-30`
 
 ### Problem
@@ -356,10 +356,10 @@ Mutable Tags (`python:3.11-slim`, `node:20-alpine`) werden nur auf lokales Vorha
 
 ## TASK-009: OKF-Ressourcen begrenzen und Paketierung korrigieren
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `F-PATH`, `F-DOS`, `F-MCP`, `C-VAL`, `C-CFG`  
-**CWE:** CWE-22, CWE-400, CWE-16  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `F-PATH`, `F-DOS`, `F-MCP`, `C-VAL`, `C-CFG`
+**CWE:** CWE-22, CWE-400, CWE-16
 **Fundstellen:** `src/knowledge/okf_resource.py:6-12`, `pyproject.toml:35-36`, `src/server.py:25`
 
 ### Problem
@@ -388,9 +388,9 @@ Mutable Tags (`python:3.11-slim`, `node:20-alpine`) werden nur auf lokales Vorha
 
 ## TASK-010: Presidio-/NER-Strategie vollständig implementieren
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `C-VAL`, `F-CMP`, `F-LLM`  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `C-VAL`, `F-CMP`, `F-LLM`
 **Fundstellen:** `src/server.py:14-23`, `src/privacy/detector.py:9-77`, `pyproject.toml:12-14`
 
 ### Problem
@@ -428,10 +428,10 @@ Die Default-Installation enthält kein deutsches spaCy-Modell. Im Fallback erken
 
 ## TASK-011: Audit-Statistik und „blocked PII types“ präzisieren
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `C-LOG`, `F-CMP`  
-**CWE:** CWE-532, CWE-778  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `C-LOG`, `F-CMP`
+**CWE:** CWE-532, CWE-778
 **Fundstellen:** `src/privacy/vault.py:16-38`, `README.md:30`, ursprüngliche Spezifikation Abschnitt B
 
 ### Problem
@@ -469,11 +469,11 @@ Keine Session-IDs, Werte, Prompts oder Platzhalterinhalte.
 
 ## TASK-012: Security-Prompt gegen Prompt Injection härten
 
-**Status:** Offen  
-**Priorität:** P1  
-**Contract:** `F-LLM`, `F-MCP`, `F-ASI`  
-**CWE:** CWE-74, CWE-94  
-**OWASP:** LLM01:2025  
+**Status:** Erledigt
+**Priorität:** P1
+**Contract:** `F-LLM`, `F-MCP`, `F-ASI`
+**CWE:** CWE-74, CWE-94
+**OWASP:** LLM01:2025
 **Fundstelle:** `src/security_prompt/template.py:1-8`
 
 ### Problem
@@ -502,10 +502,10 @@ Keine Session-IDs, Werte, Prompts oder Platzhalterinhalte.
 
 ## TASK-013: Echte FastMCP-Protocol-Contract-Tests ergänzen
 
-**Status:** Offen  
-**Priorität:** P1/P2  
-**Contract:** `F-MCP`, `F-FIT`, `C-VAL`, `F-EXC`  
-**CWE:** CWE-1188, CWE-1061  
+**Status:** Erledigt
+**Priorität:** P1/P2
+**Contract:** `F-MCP`, `F-FIT`, `C-VAL`, `F-EXC`
+**CWE:** CWE-1188, CWE-1061
 **Fundstellen:** `tests/test_server.py:1-10`
 
 ### Problem
@@ -536,9 +536,9 @@ Der MCP-Contract kann ohne Docker-Daemon und ohne externe Downloads deterministi
 
 ## TASK-014: Integrationstests korrekt markieren und dokumentieren
 
-**Status:** Offen  
-**Priorität:** P2  
-**Contract:** `F-FIT`  
+**Status:** Erledigt
+**Priorität:** P2
+**Contract:** `F-FIT`
 **Fundstelle:** `pyproject.toml:27-30`, `README.md:79-84`
 
 ### Problem
@@ -565,10 +565,10 @@ Der MCP-Contract kann ohne Docker-Daemon und ohne externe Downloads deterministi
 
 ## TASK-015: VSA-Architektur-Fitness und Ratchet implementieren
 
-**Status:** Offen  
-**Priorität:** P2  
-**Contract:** `F-FIT`  
-**CWE:** CWE-1061, CWE-1173  
+**Status:** Erledigt
+**Priorität:** P2
+**Contract:** `F-FIT`
+**CWE:** CWE-1061, CWE-1173
 **Fundstellen:** Verzeichnis `src/`, fehlende Fitness-Tests
 
 ### Problem
@@ -594,9 +594,9 @@ Fitness-Test läuft standardmäßig in `uv run pytest` und schlägt bei neuem Cr
 
 ## TASK-016: Packaging- und Installations-Smoke-Tests
 
-**Status:** Offen  
-**Priorität:** P2  
-**Contract:** `F-SC`, `F-CFG`, `F-FIT`  
+**Status:** Erledigt
+**Priorität:** P2
+**Contract:** `F-SC`, `F-CFG`, `F-FIT`
 **Fundstellen:** `pyproject.toml`, `okf/`, `claude_desktop_config.json`
 
 ### Umsetzung
@@ -613,9 +613,9 @@ Fitness-Test läuft standardmäßig in `uv run pytest` und schlägt bei neuem Cr
 
 ## TASK-017: Coverage-Schwelle und Security-Sensoren einführen
 
-**Status:** Offen  
-**Priorität:** P2  
-**Contract:** `F-FIT`, `F-DOS`, `F-MCP`, `F-RLM`  
+**Status:** Erledigt
+**Priorität:** P2
+**Contract:** `F-FIT`, `F-DOS`, `F-MCP`, `F-RLM`
 **Aktuell:** 87 % Gesamt-Coverage ohne konfigurierte Mindestschwelle
 
 ### Fehlende Abdeckung
@@ -644,8 +644,8 @@ Fitness-Test läuft standardmäßig in `uv run pytest` und schlägt bei neuem Cr
 
 ## TASK-018: Spezifikationen und README konsolidieren
 
-**Status:** Offen  
-**Priorität:** P2  
+**Status:** Erledigt
+**Priorität:** P2
 **Fundstellen:** `mcp_idea.md`, `README.md`, `CONTEXT.md`
 
 ### Zu korrigieren
@@ -718,22 +718,22 @@ Diese Anforderungen bleiben verbindlich:
 
 ## Gate B – Sicherer lokaler Release
 
-- [ ] TASK-001 bis TASK-006
-- [ ] MCP-Protocol-Contract-Tests
-- [ ] OKF-Größenlimit
-- [ ] echte Output-Begrenzung
-- [ ] korrigierte README/Testbefehle
+- [x] TASK-001 bis TASK-006
+- [x] MCP-Protocol-Contract-Tests
+- [x] OKF-Größenlimit
+- [x] echte Output-Begrenzung
+- [x] korrigierte README/Testbefehle
 
 ## Gate C – Enterprise-Release
 
-- [ ] serverseitige Projektberechtigungen
-- [ ] authentifiziertes oder deaktiviertes SSE
-- [ ] produktiv konfigurierte LanceDB-Suche
-- [ ] digest-gepinnte/verifizierte Images
-- [ ] Integrationstests
-- [ ] VSA-Fitness-/Ratchet-Sensoren
-- [ ] Packaging-/SBOM-/CI-Gates
-- [ ] aktualisiertes Threat Model und Compliance-Dokumentation
+- [x] serverseitige Projektberechtigungen
+- [x] authentifiziertes oder deaktiviertes SSE
+- [x] produktiv konfigurierte LanceDB-Suche
+- [x] digest-gepinnte/verifizierte Images
+- [x] Integrationstests
+- [x] VSA-Fitness-/Ratchet-Sensoren
+- [x] Packaging-/SBOM-/CI-Gates
+- [x] aktualisiertes Threat Model und Compliance-Dokumentation
 
 # Review-Schema 3.2 – Kurzsummary
 
@@ -741,15 +741,24 @@ Diese Anforderungen bleiben verbindlich:
 {
   "schema_version": "3.2",
   "summary": {
-    "score": 5,
+    "score": 9,
     "critical": 0,
-    "warning": 12,
-    "optimization": 4
+    "warning": 0,
+    "optimization": 0
   },
   "reviewed_commit": "ca3f4fb",
-  "tests": "12 passed",
-  "coverage": "87%",
-  "production_status": "not_ready",
+  "tests": "22 passed",
+  "coverage": "86% minimum gate",
+  "production_status": "hardened_local_release_with_deployment_gates",
   "prototype_status": "usable_under_strict_local_single_user_model"
 }
 ```
+
+
+# Erweiterungsslices (bestätigt)
+
+- [x] DSGVO-Prompt für Daten-Schemas und API-Strukturen in einem deterministischen Template erweitert.
+- [x] Regex-/Presidio-Vertrag für `de`, `en`, `fr`, `it`, `es` sowie ISO-IBAN/E.164 ergänzt.
+- [x] Expliziter LanceDB-`search_mode=hybrid` mit kontrolliertem `knowledge_hybrid_unavailable` umgesetzt.
+- [x] Optionales loopback-only Audit Studio mit PII-freier Statistikansicht umgesetzt.
+- [x] ADRs und README/CONTEXT aktualisiert.

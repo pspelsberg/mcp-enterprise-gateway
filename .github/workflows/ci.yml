@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: latest
+      - name: Set up Python
+        run: uv python install 3.11
+      - name: Install dependencies
+        run: uv sync --extra test
+      - name: Verify lockfile
+        run: uv lock --check
+      - name: Unit tests and coverage
+        run: uv run pytest --cov=src --cov-report=term-missing --cov-fail-under=85
+      - name: Integration tests
+        run: uv run pytest -m integration --no-cov
+      - name: Type check
+        run: uv run --with mypy mypy src --ignore-missing-imports --follow-imports=skip --disable-error-code=var-annotated --disable-error-code=misc --disable-error-code=attr-defined --disable-error-code=union-attr
+      - name: Build package
+        run: uv build
