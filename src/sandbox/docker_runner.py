@@ -20,6 +20,13 @@ class DockerRunner:
         image=self.images[language]
         command=["python","-c",code] if language=="python" else ["node","-e",code]
         try:
+            # Explicit lookup prevents the SDK from silently pulling untrusted images.
+            client.images.get(image)
+        except NotFound as exc:
+            raise SandboxExecutionError("sandbox image is not available locally") from exc
+        except DockerException as exc:
+            raise SandboxExecutionError("sandbox image lookup failed") from exc
+        try:
             container=client.containers.run(image,command,detach=True,network_mode="none",user="1000:1000",read_only=True,cap_drop=["ALL"],security_opt=["no-new-privileges:true"],tmpfs={"/tmp":"rw,noexec,nosuid,size=64m"},mem_limit="256m",nano_cpus=500_000_000,pids_limit=64)
             try:
                 result=container.wait(timeout=timeout_seconds)

@@ -12,8 +12,10 @@ def test_docker_security_options_are_applied():
             assert image=="python:3.11-slim"; assert kw["network_mode"]=="none"; assert kw["read_only"]
             assert kw["user"]=="1000:1000"; assert kw["cap_drop"]==["ALL"]; assert kw["pids_limit"]==64
             return Container()
+    class Images:
+        def get(self, image): pass
     class Client:
-        containers=Containers()
+        containers=Containers(); images=Images()
         def ping(self): pass
     assert DockerRunner(Client()).run("print(1)","python",10)["exit_code"]==0
 

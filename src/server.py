@@ -3,13 +3,26 @@ from fastmcp import FastMCP
 from pydantic import ValidationError
 from src.core.models import AnonymizeInput, DeanonymizeInput, QueryInput, ExecuteInput, GatewayError
 from src.privacy.service import PrivacyService
+from src.privacy.detector import PresidioDetector
 from src.knowledge.lancedb_adapter import LanceDBAdapter
 from src.knowledge.okf_resource import OKFResourceProvider
 from src.sandbox.docker_runner import DockerRunner
 from src.security_prompt.template import security_audit_prompt
 
 mcp=FastMCP("Enterprise Gateway")
-privacy=PrivacyService(); knowledge=LanceDBAdapter(); sandbox=DockerRunner(); okf=OKFResourceProvider(os.getenv("OKF_ROOT","okf"))
+
+def _privacy_service():
+    # Model discovery is local-only. A missing model intentionally selects regex fallback.
+    try:
+        import spacy
+        if not spacy.util.is_package("de_core_news_sm"):
+            return PrivacyService(PresidioDetector())
+        from presidio_analyzer import AnalyzerEngine
+        return PrivacyService(PresidioDetector(AnalyzerEngine()))
+    except Exception:
+        return PrivacyService(PresidioDetector())
+
+privacy=_privacy_service(); knowledge=LanceDBAdapter(); sandbox=DockerRunner(); okf=OKFResourceProvider(os.getenv("OKF_ROOT","okf"))
 
 def safe(call):
     try: return call()
