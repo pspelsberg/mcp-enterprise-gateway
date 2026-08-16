@@ -36,7 +36,7 @@ def test_masking_strategies_are_distinct_and_non_reversible():
     assert "session_id" not in redact
     hashed = service.anonymize("Kontakt max@example.com", strategy="hash")
     assert hashed["anonymized_prompt"].startswith("Kontakt <HASH_EMAIL_ADDRESS_")
-    assert len(hashed["anonymized_prompt"].rsplit("_", 1)[-1].rstrip(">")) == 8
+    assert len(hashed["anonymized_prompt"].rsplit("_", 1)[-1].rstrip(">")) == 16
     assert "session_id" not in hashed
     with pytest.raises(ValueError): service.anonymize("x@example.com", strategy="unknown")
 
@@ -94,11 +94,9 @@ def test_private_key_standard_header_is_detected():
     assert "<PRIVATE_KEY_0>" in out["anonymized_prompt"]
 
 
-def test_secret_block_only_applies_to_prohibited_technical_secret_classes():
-    # OpenAI and GitHub credentials are masked under the explicitly narrow block policy.
-    out = PrivacyService().anonymize("sk-" + "a" * 20, on_secret="block")
-    assert "<OPENAI_KEY_0>" in out["anonymized_prompt"]
-
+def test_secret_block_applies_to_every_recognized_technical_secret_class():
+    with pytest.raises(DLPPolicyViolationError):
+        PrivacyService().anonymize("sk-" + "a" * 20, on_secret="block")
 
 def test_secret_policy_is_validated():
     with pytest.raises(ValueError): PrivacyService().anonymize("x", on_secret="unknown")

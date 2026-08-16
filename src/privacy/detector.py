@@ -42,6 +42,8 @@ _GITHUB_TOKEN = re.compile(r"ghp_[a-zA-Z0-9]{36}")
 _PRIVATE_KEY = re.compile(r"-----BEGIN (?:RSA|EC|OPENSSH|DSA|PRIVATE)(?: PRIVATE)? KEY-----")
 _JWT_TOKEN = re.compile(r"eyJ[a-zA-Z0-9_-]+\.eyJ[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+")
 _CONNECTION_STRING = re.compile(r"(?:postgres|mysql|mongodb|redis):\/\/[^\s]+")
+MAX_DETECTED_ENTITIES = 1_000
+
 _SECRET_PATTERNS = [
     ("AWS_KEY", _AWS_KEY), ("ANTHROPIC_KEY", _ANTHROPIC_KEY),
     ("OPENAI_KEY", _OPENAI_KEY), ("GITHUB_TOKEN", _GITHUB_TOKEN),
@@ -61,17 +63,22 @@ class RegexDetector:
             ("PHONE_NUMBER",_LOCAL_PHONE), ("GERMAN_LICENSE_PLATE",_PLATE),
             ("PERSONAL_ID",_PERSONAL), ("PERSON",_NAME),
         ] + _SECRET_PATTERNS
+        def add(entity: Entity) -> None:
+            found.append(entity)
+            if len(found) > MAX_DETECTED_ENTITIES:
+                raise ValueError("too many detected entities")
+
         for typ,rx in patterns:
             for m in rx.finditer(text):
                 value=m.group(); clean=re.sub(r"[ .-]", "", value)
                 if typ=="IBAN_CODE" and not valid_iban(clean): continue
                 if typ=="GERMAN_TAX_ID" and not valid_tax_id(clean): continue
-                found.append(Entity(typ,value,m.start(),m.end()))
+                add(Entity(typ,value,m.start(),m.end()))
         for rx in (_FORMATTED_INTL_PHONE,):
             for m in rx.finditer(text):
                 value = m.group()
                 if 8 <= len(re.sub(r"\D", "", value)) <= 15:
-                    found.append(Entity("PHONE_NUMBER", value, m.start(), m.end()))
+                    add(Entity("PHONE_NUMBER", value, m.start(), m.end()))
         # Longest match, then left-to-right; overlapping detector hits are discarded.
         out: list[Entity] = []
         for e in sorted(found,key=lambda x:(-(x.end-x.start),x.start)):
@@ -115,8 +122,13 @@ class PresidioDetector(RegexDetector):
             results = self.analyzer.analyze(text=text, language=language)
         except Exception:
             return super().detect(text, language)
-        entities = [Entity(r.entity_type, text[r.start:r.end], r.start, r.end) for r in results if r.score >= 0.5]
+        accepted = [result for result in results if result.score >= 0.5]
+        if len(accepted) > MAX_DETECTED_ENTITIES:
+            raise ValueError("too many detected entities")
+        entities = [Entity(result.entity_type, text[result.start:result.end], result.start, result.end) for result in accepted]
         entities.extend(super().detect(text, language))
+        if len(entities) > MAX_DETECTED_ENTITIES:
+            raise ValueError("too many detected entities")
         out: list[Entity] = []
         for e in sorted(entities, key=lambda x: (-(x.end-x.start), x.start)):
             if not any(e.start < x.end and x.start < e.end for x in out): out.append(e)

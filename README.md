@@ -42,16 +42,16 @@ uv sync --extra test
 # Optional: ein passendes spaCy-Modell separat installieren; niemals automatisch herunterladen.
 ```
 
-Der Server startet ohne spaCy-Modell im deterministischen Regex-Fallback-Modus. Für Docker-Ausführung muss der Docker-Daemon laufen und die Images `python:3.11-slim` bzw. `node:20-alpine` müssen lokal vorhanden sein (kein automatischer Pull).
+Der Server startet ohne spaCy-Modell im deterministischen Regex-Fallback-Modus. Für Docker-Ausführung müssen die konfigurierten, digest-gepinnten Python- und Node-Images bereits lokal vorhanden sein (kein automatischer Pull).
 
 ## Start
 
 ```bash
 .venv/bin/python -m src.server --stdio
-MCP_SSE_PORT=8000 .venv/bin/python -m src.server --sse
+MCP_SSE_TOKEN="mindestens-32-zeichen-geheimnis" MCP_ALLOWED_PROJECTS=project-a MCP_SSE_PORT=8000 .venv/bin/python -m src.server --sse
 ```
 
-SSE ist standardmäßig nicht freigeschaltet: `--sse` erfordert `MCP_SSE_TOKEN` (mindestens 32 Zeichen), bindet ausschließlich an `127.0.0.1` und sollte nicht geteilt betrieben werden. Für Multi-Projekt-Betrieb zusätzlich `MCP_ALLOWED_PROJECTS=project-a,project-b` setzen. Für Claude Desktop:
+SSE ist standardmäßig nicht freigeschaltet: `--sse` erfordert `MCP_SSE_TOKEN` (mindestens 32 Zeichen) oder ein validiertes `MCP_SSE_TOKENS_JSON` mit je `client_id` und `projects`, bindet ausschließlich an `127.0.0.1` und ist rate-limitiert. Für jede Anfrage bindet der Server Vault-Sessions an den MCP-Prinzipal und schneidet dessen Projektmenge mit `MCP_ALLOWED_PROJECTS=project-a,project-b`. Die statische Token-Variante ist ausschließlich für lokalen Single-User-Betrieb; sie ist kein Enterprise-Identity-Provider. Für Claude Desktop:
 
 ```json
 {
@@ -68,14 +68,15 @@ Die Datei liegt zusätzlich als [`claude_desktop_config.json`](./claude_desktop_
 
 ## Grenzen und Sicherheit
 
-- Eingaben maximal 100 KiB; `top_k` 1–50; Docker-Timeout 1–30 Sekunden.
-- `anonymize_prompt` unterstützt `strategy=placeholder|redact|hash`, `on_secret=mask|block` sowie jeweils maximal 50 Whitelist-/Blacklist-Begriffe mit höchstens 100 Zeichen. Technische Secrets (AWS/OpenAI/Anthropic/GitHub, Private Keys, JWTs und Connection Strings) werden im Maskierungsmodus als Secret-Entitäten erkannt; `on_secret=block` blockiert AWS-Keys, Private Keys und Connection Strings. Whitelist-Abgleiche sind literal; Blacklist-Treffer überschreiben die Whitelist und werden als `<CUSTOM_n>` maskiert.
-- stdout/stderr werden bei 1 MiB abgeschnitten.
-- Container: `network_mode=none`, `read_only`, `cap_drop=ALL`, `no-new-privileges`, `user=1000:1000`, `/tmp` als begrenztes `tmpfs`, CPU-/RAM-/PID-Limits.
+- Eingaben maximal 100 KiB; `top_k` 1–50; Docker-Timeout 1–30 Sekunden; pro MCP-Prinzipal höchstens 120 Tool-Aufrufe je 60 Sekunden.
+- `anonymize_prompt` unterstützt `strategy=placeholder|redact|hash`, `on_secret=mask|block` sowie jeweils maximal 50 Whitelist-/Blacklist-Begriffe mit höchstens 100 UTF-8-Bytes. Technische Secrets (AWS/OpenAI/Anthropic/GitHub, Private Keys, JWTs und Connection Strings) werden immer maskiert, niemals durch eine Whitelist freigegeben; `on_secret=block` blockiert jeden erkannten technischen Secret-Typ. Literal-Matches und erkannte Entitäten sind auf 1.000 begrenzt.
+- Die `hash`-Strategie verwendet einen pro Prozess zufällig erzeugten HMAC-Schlüssel (16 Hex-Zeichen Anzeige), nicht einen nackten SHA-256-Wert. Sie ist nicht rückführbar und ändert sich nach Neustart.
+- stdout/stderr werden bei 1 MiB abgeschnitten; Docker erhält zusätzlich eine begrenzte `local`-Log-Policy (3 MiB, eine Datei), damit abgeschlossene Logs nicht unbeschränkt daemonseitig wachsen.
+- Container: `network_mode=none`, `read_only`, `cap_drop=ALL`, `no-new-privileges`, `user=1000:1000`, `/tmp` als begrenztes `tmpfs`, CPU-/RAM-/PID-Limits. Für eine stärkere Grenze muss der Docker-Daemon selbst rootless betrieben werden.
 - Keine Host-Subprocess-Ausführung und kein Mount des Projektverzeichnisses.
-- Für Sandbox-Betrieb: `MCP_REQUIRE_IMAGE_DIGEST=1` (Default), `MCP_PYTHON_IMAGE` und `MCP_NODE_IMAGE` als verifizierte `@sha256:`-Referenzen konfigurieren; die Default-Digests sind fail-closed Platzhalter. Images werden nie automatisch gepullt.
-- Build-/Lockfile- und Coverage-Gates laufen in CI; SBOM/Provenienz der digest-gepinnten Release-Images ist vor Deployment zu attestieren.
-- Vault: maximal 1.000 Sessions, TTL 1 Stunde, UUIDv4; Neustart löscht alle Mappings.
+- `MCP_PYTHON_IMAGE` und `MCP_NODE_IMAGE` müssen verifizierte `@sha256:`-Referenzen sein; die Default-Digests sind fail-closed Platzhalter. Images werden nie automatisch gepullt.
+- Build-/Lockfile- und Coverage-Gates laufen in CI; Aktionen und uv-Version sind gepinnt. SBOM/Provenienz der digest-gepinnten Release-Images ist vor Deployment zu attestieren.
+- Vault: maximal 1.000 Sessions insgesamt bzw. 100 je Prinzipal, TTL 1 Stunde, UUIDv4, Bytebudget und prinzipalgebundene Wiederherstellung; Neustart löscht alle Mappings.
 - OKF-IDs und `project_id` erlauben nur `[a-zA-Z0-9_-]+`; keine Path-Traversal- oder SQL-Filterstrings.
 - Original-PII und Prompts werden nie geloggt.
 
@@ -93,14 +94,15 @@ Die Tests mocken Docker und externe Modell-Downloads. LanceDB-/Docker-Integratio
 ### Konfiguration
 
 - `OKF_ROOT`: lokaler Pfad zu Markdown-Ressourcen (maximal 1 MiB je Datei).
+- `AUDIT_STATS_URL`: ausschließlich eine literal loopback-IP (`127.0.0.1` oder `[::1]`), ohne Redirect-Following; dadurch verlassen Upstream-Bearer-Token den lokalen Origin nicht. `AUDIT_STUDIO_UPSTREAM_TOKEN` kann dafür ein Token aus `MCP_SSE_TOKENS_JSON` wählen (sonst wird `MCP_SSE_TOKEN` verwendet).
 - `LANCEDB_PATH` und `LANCEDB_TABLE`: optionale lokale LanceDB-Konfiguration; `LocalHashEmbedder` ist deterministisch und lädt nichts aus dem Netz.
 - Ohne ein explizit installiertes spaCy-/Presidio-Modell läuft der dokumentierte `regex_fallback`. Unterstützt werden `de`, `en`, `fr`, `it` und `es`, einschließlich aller ISO-IBAN-Länder via Modulo-97-Prüfung, E.164-Telefonnummern und lokalisierter Namenspräfixe. Modelle werden niemals automatisch geladen; `privacy://audit_stats` weist den Modus je Sprache aus.
 - `privacy://audit_stats` zählt maskierte Erkennungen als `blocked_pii_types`; Werte, Prompts und Session-IDs werden nicht ausgegeben. Nur `placeholder` erzeugt eine deanonymisierbare RAM-Session; `redact` und `hash` sind nicht rückführbar.
 - Hybrid-Suche setzt einen LanceDB-FTS/BM25-Index auf `text` voraus. Ist er nicht vorhanden, liefert `search_mode="hybrid"` den kontrollierten Fehler `knowledge_hybrid_unavailable`; es gibt keinen stillen Vector-Fallback.
-- Audit Studio ist ausschließlich eine optionale lokale Einzelbenutzer-UI. Es darf nicht als authentifiziertes Multi-Tenant-Dashboard exponiert werden.
+- Audit Studio ist ausschließlich eine optionale lokale Einzelbenutzer-UI. Es setzt kein Token-Cookie: Die lokale Seite fragt den konfigurierten `AUDIT_STUDIO_TOKEN` nur im Browser-Speicher ab und sendet ihn als Bearer-Header. Es darf nicht als authentifiziertes Multi-Tenant-Dashboard exponiert werden.
 - Fehlerantworten sind absichtlich generisch und enthalten keine Stacktraces, Pfade oder Backenddetails.
 
-SSE bleibt ein lokaler Hochrisiko-Transport, weil Docker-Ausführung und kurzlebige Deanonymisierung angeboten werden. Für produktiven Mehrbenutzerbetrieb sind zusätzliche Authentifizierung, Projekt-Principal-Bindung und Rate-Limits erforderlich.
+SSE bleibt ein lokaler Hochrisiko-Transport, weil Docker-Ausführung und kurzlebige Deanonymisierung angeboten werden. Dieser Server ist **nicht** für Shared-/Enterprise-Betrieb freigegeben: Dafür sind ein externer principal-bound OAuth/OIDC-Provider, tenant-spezifische Projektberechtigungen, verteilte Rate-Limits und rootless/stärkere Sandbox-Isolation erforderlich.
 
 ### Schnelltest
 

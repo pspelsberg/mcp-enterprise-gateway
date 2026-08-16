@@ -181,7 +181,7 @@ def test_C_CFG_audit_fetch_uses_loopback_timeout_and_bounded_response(monkeypatc
     calls = []
     monkeypatch.setenv("AUDIT_STATS_URL", "http://127.0.0.1:9000/stats")
     monkeypatch.setenv("AUDIT_STUDIO_UPSTREAM_TOKEN", "u" * 32)
-    monkeypatch.setattr(audit_studio, "urlopen", lambda req, timeout: (calls.append((req.full_url, timeout)) or Response()))
+    monkeypatch.setattr(audit_studio, "_open_no_redirect", lambda req, timeout: (calls.append((req.full_url, timeout)) or Response()))
     assert audit_studio._fetch_stats()["active_sessions"] == 2
     assert calls == [("http://127.0.0.1:9000/stats", 2)]
 
@@ -199,30 +199,27 @@ def test_C_CFG_audit_handler_fetch_failure_is_sanitized(monkeypatch):
     assert response.status == 502 and "secret backend" not in body
 
 
-def test_C_CFG_audit_handler_cookie_auth_and_bad_method():
+def test_C_AUTH_audit_handler_rejects_cookie_bearers_and_requires_header():
     import threading
     from http.client import HTTPConnection
     from src import audit_studio
-    monkeypatch_token = "t" * 32
-    import os; os.environ["AUDIT_STUDIO_TOKEN"] = monkeypatch_token
-    import pytest
-    # Cookie auth is accepted without exposing the token in the response body.
+    token = "t" * 32
+    import os; os.environ["AUDIT_STUDIO_TOKEN"] = token
     audit_studio._fetch_stats = lambda: {"active_sessions": 0}
     server = audit_studio.ThreadingHTTPServer(("127.0.0.1", 0), audit_studio._Handler)
-    thread = threading.Thread(target=server.handle_request); thread.start(); conn = HTTPConnection("127.0.0.1", server.server_port); conn.request("GET", "/api/audit_stats", headers={"Cookie": "audit_token=" + monkeypatch_token}); response = conn.getresponse(); response.read(); thread.join(timeout=2); server.server_close(); assert response.status == 200
+    thread = threading.Thread(target=server.handle_request); thread.start(); conn = HTTPConnection("127.0.0.1", server.server_port); conn.request("GET", "/api/audit_stats", headers={"Cookie": "audit_token=" + token}); response = conn.getresponse(); response.read(); thread.join(timeout=2); server.server_close(); assert response.status == 401
     os.environ.pop("AUDIT_STUDIO_TOKEN", None)
 
 
-def test_C_VAL_audit_handler_root_sets_cookie_and_fetch_bad_payload():
+def test_C_VAL_audit_handler_root_never_sets_token_cookie_and_fetch_bad_payload():
     import os, threading
     from http.client import HTTPConnection
     from src import audit_studio
     os.environ["AUDIT_STUDIO_TOKEN"] = "t" * 32
     server = audit_studio.ThreadingHTTPServer(("127.0.0.1", 0), audit_studio._Handler)
-    thread = threading.Thread(target=server.handle_request); thread.start(); conn = HTTPConnection("127.0.0.1", server.server_port); conn.request("GET", "/"); response = conn.getresponse(); response.read(); thread.join(timeout=2); server.server_close(); assert response.status == 200 and "HttpOnly" in response.getheader("Set-Cookie")
+    thread = threading.Thread(target=server.handle_request); thread.start(); conn = HTTPConnection("127.0.0.1", server.server_port); conn.request("GET", "/"); response = conn.getresponse(); response.read(); thread.join(timeout=2); server.server_close(); assert response.status == 200 and response.getheader("Set-Cookie") is None
     os.environ.pop("AUDIT_STUDIO_TOKEN", None)
     with pytest.raises(ValueError): audit_studio._safe_stats(b'{"active_sessions":1}' + b"x" * (audit_studio._MAX_STATS_BYTES + 1))
-
 
 def test_C_AC_server_audit_endpoint_requires_bearer_token():
     import asyncio, os

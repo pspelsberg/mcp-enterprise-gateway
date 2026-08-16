@@ -181,6 +181,9 @@ class DockerRunner:
                 cap_drop=["ALL"], security_opt=["no-new-privileges:true"],
                 tmpfs={"/tmp": "rw,noexec,nosuid,size=64m"}, mem_limit="256m",
                 nano_cpus=500_000_000, pids_limit=64,
+                # Bound daemon-side retention as well as gateway-side streaming;
+                # otherwise Docker can buffer an unbounded completed log first.
+                log_config={"type": "local", "config": {"max-size": "3m", "max-file": "1"}},
             )
             try:
                 result = container.wait(timeout=timeout_seconds)
